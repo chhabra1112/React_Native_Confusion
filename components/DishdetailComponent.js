@@ -1,25 +1,39 @@
 import React,{Component} from 'react';
-import { View, Text } from 'react-native';
-import { Card } from 'react-native-elements';
-import {DISHES} from '../shared/dishes';
+import { View, Text , FlatList, ScrollView } from 'react-native';
+import { Card,Icon } from 'react-native-elements';
+import { connect } from 'react-redux';
+import { baseUrl } from '../shared/baseUrl';
+import { postFavourite } from '../redux/ActionCreators';
+
+const mapStateToProps = state => {
+    return {
+      dishes: state.dishes,
+      comments: state.comments,
+      favourites: state.favourites
+    }
+  }
+  const mapDispatchToProps = dispatch => ({
+    postFavourite: (dishId) => dispatch(postFavourite(dishId))
+})
 
 class Dishdetail extends Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            dishes: DISHES
-        };
-    }
 
     static navigationOptions = {
         title: 'Dish Details'
     };
+    markFavourite(dishId) {
+        this.props.postFavourite(dishId);
+    }
 
     render() {
         const dishId = this.props.navigation.getParam('dishId','');
-        return(
-            <RenderDish dish={this.state.dishes[+dishId]} />
+        return(<ScrollView>
+            <RenderDish dish={this.props.dishes.dishes[+dishId]}
+                favourite={this.props.favourites.some(el => el === dishId)}
+                onPress={() => this.markFavourite(dishId)} 
+                />
+            <RenderComments comments={this.props.comments.comments.filter((comment) => comment.dishId === dishId)} />
+        </ScrollView>
         );
     }
 }
@@ -31,10 +45,17 @@ function RenderDish(props) {
             return(
                 <Card
                 featuredTitle={dish.name}
-                image={require('./images/uthappizza.png')}>
+                image={{uri: baseUrl + dish.image}}>
                     <Text style={{margin: 10}}>
                         {dish.description}
                     </Text>
+                    <Icon
+                    raised
+                    reverse
+                    name ={props.favourite?'heart':'heart-o'}
+                    type='font-awesome'
+                    color='#f50'
+                    onPress={()=>props.favourite?console.log('already favourite'):props.onPress()}/>
                 </Card>
             );
         }
@@ -43,5 +64,31 @@ function RenderDish(props) {
         }
 }
 
+function RenderComments(props) {
 
-export default Dishdetail;
+    const comments = props.comments;
+    // console.log(comments);
+            
+    const renderCommentItem = ({item, index}) => {
+        
+        return (
+            <View key={index} style={{margin: 10}}>
+                <Text style={{fontSize: 14}}>{item.comment}</Text>
+                <Text style={{fontSize: 12}}>{item.rating} Stars</Text>
+                <Text style={{fontSize: 12}}>{'-- ' + item.author + ', ' + item.date} </Text>
+            </View>
+        );
+    };
+    
+    return (
+        <Card title='Comments' >
+        <FlatList 
+            data={comments}
+            renderItem={renderCommentItem}
+            keyExtractor={item => item.id.toString()}
+            />
+        </Card>
+    );
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Dishdetail);
