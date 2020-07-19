@@ -5,7 +5,7 @@ import { View, Platform,Image,StyleSheet, Text } from 'react-native';
 import { createDrawerNavigator,DrawerItems} from 'react-navigation-drawer';
 import { createStackNavigator } from 'react-navigation-stack';
 // import { NavigationContainer } from '@react-navigation/native';
-import { createAppContainer,SafeAreaView } from 'react-navigation';
+import { createAppContainer } from 'react-navigation';
 import Home from './HomeComponent';
 import About from './AboutComponent';
 import Contact from './ContactComponent';
@@ -14,6 +14,8 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { connect } from 'react-redux';
 import { fetchDishes, fetchComments, fetchPromos, fetchLeaders } from '../redux/ActionCreators';
 import { baseUrl } from '../shared/baseUrl';
+import Reservation from './ReservationComponent';
+import SafeAreaView,{SafeAreaProvider} from 'react-native-safe-area-view';
 
 const mapStateToProps = state => {
   return {
@@ -27,7 +29,23 @@ const mapDispatchToProps = dispatch => ({
   fetchLeaders: () => dispatch(fetchLeaders()),
 })
 
-
+const ReservationNavigator = createStackNavigator({
+  Reservation: { screen: Reservation,
+  navigationOptions: ({ navigation }) => ({
+    headerStyle: {
+        backgroundColor: "#512DA8"
+    },
+    headerTitleStyle: {
+        color: "#fff"            
+    },
+    headerTintColor: "#fff",
+    headerLeft: ()=><Icon name="menu" size={24}
+      iconStyle={{ color: 'white' }} 
+      onPress={ () => navigation.navigate('DrawerToggle') } />    
+  })
+}
+}
+);
 const HomeNavigator = createStackNavigator({
   Home: { screen: Home ,
   navigationOptions: ({ navigation }) => ({
@@ -113,7 +131,9 @@ const MenuNavigator = createStackNavigator({
     }
   }
 })
-const CustomDrawerContentComponent = (props)=>(
+const CustomDrawerContentComponent = (props)=>{
+  return(
+    <SafeAreaProvider>
   <ScrollView>
     <SafeAreaView style={styles.container}
     forceInset={{top:'always',horizontal:'never'}}>
@@ -130,7 +150,9 @@ const CustomDrawerContentComponent = (props)=>(
     </SafeAreaView>
 
   </ScrollView>
+  </SafeAreaProvider>
 )
+  }
 const MainNavigator = createDrawerNavigator({
   Home: 
     { screen: HomeNavigator,
@@ -192,6 +214,22 @@ const MainNavigator = createDrawerNavigator({
             />
           ),
       }, 
+    },
+    Reservation:{
+      screen: ReservationNavigator,
+      navigationOptions: {
+        title: 'Reseerve Table',
+        drawerLabel: 'Reserve Table',
+          drawerIcon: ({ tintColor, focused }) => (
+            <Icon
+              name='cutlery'
+              type='font-awesome'            
+              size={24}
+              color={tintColor}
+            />
+          ),
+      },
+
     }
 },
  {
