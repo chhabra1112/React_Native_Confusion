@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import { View, StyleSheet, Picker, Text, Switch, Button,Modal } from 'react-native';
+import { View, StyleSheet, Picker, Text, Switch, Button,Modal,Alert} from 'react-native';
 import {Input} from 'react-native-elements';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
-
+import * as Animatable from 'react-native-animatable';
+import {Notifications} from 'expo';
+import * as Permissions from 'expo-permissions';
 class Resevation extends Component {
     constructor(props) {
         super(props);
@@ -26,7 +28,16 @@ class Resevation extends Component {
     }
     handleReservation() {
         console.log(JSON.stringify(this.state));
-        this.toggleModal();
+        Alert.alert(
+            'Your Reservation OK ? ',
+            'No. of Guests: ' + this.state.guests + '\nSmoking? '+this.state.smoking+'\nDate and Time: '+this.state.date,
+            [
+            {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+            {text: 'OK', onPress: () =>  this.presentLocalNotification(this.state.date)},
+            ],
+            { cancelable: false }
+        );
+        this.resetForm();
     }
     resetForm() {
         this.setState({
@@ -36,8 +47,35 @@ class Resevation extends Component {
             showModal: false
         });
     }
+    async obtainNotificationPermission() {
+        let permission = await Permissions.getAsync(Permissions.USER_FACING_NOTIFICATIONS);
+        if (permission.status !== 'granted') {
+            permission = await Permissions.askAsync(Permissions.USER_FACING_NOTIFICATIONS);
+            if (permission.status !== 'granted') {
+                Alert.alert('Permission not granted to show notifications');
+            }
+        }
+        return permission;
+    }
+
+    async presentLocalNotification(date) {
+        await this.obtainNotificationPermission();
+        Notifications.presentLocalNotificationAsync({
+            title: 'Your Reservation',
+            body: 'Reservation for '+ date + ' requested',
+            ios: {
+                sound: true
+            },
+            android: {
+                sound: true,
+                vibrate: true,
+                color: '#512DA8'
+            }
+        });
+    }
     render() {
         return (
+            <Animatable.View animation="zoomIn" duration={2000} delay={1000}>
             <ScrollView>
                 <View style={styles.formRow}>
                     <Text style={styles.formLabel}>Number Of Guests</Text>
@@ -71,14 +109,14 @@ class Resevation extends Component {
                         placeholder={"01/01/2019 1:00PM"}
                         editable= {false}
                         value={this.state.date.toString()}
-                        style={styles.formItem}
+                        containerStyle={styles.formItem}
                     />
                     </TouchableOpacity>
                     </View>
                 {this.state.datePickerVisible && (
                     <DateTimePicker
                         testID="dateTimePicker"
-                        value={(this.state.date)}
+                        value={new Date()}
                         mode="date"
                         display="default"
                         onChange={(event, value) => {
@@ -145,7 +183,7 @@ class Resevation extends Component {
                 accessibilityLabel="Learn more about this purple button"
             />
         </View>
-        <Modal animationType = {"slide"} transparent = {false}
+        {/* <Modal animationType = {"slide"} transparent = {false}
                     visible = {this.state.showModal}
                     onDismiss = {() => this.toggleModal() }
                     onRequestClose = {() => this.toggleModal() }>
@@ -161,8 +199,9 @@ class Resevation extends Component {
                             title="Close" 
                             />
                     </View>
-                </Modal>
+                </Modal> */}
             </ScrollView >
+            </Animatable.View>
         )
     }
 }

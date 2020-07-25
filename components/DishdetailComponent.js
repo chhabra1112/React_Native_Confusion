@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
-import { View, Text, FlatList, ScrollView, Button, Modal, StyleSheet,TextInput } from 'react-native';
+import { View, Text, FlatList, ScrollView, Button, Modal, StyleSheet,Alert,PanResponder,Share } from 'react-native';
 import { Card, Icon,Input, ThemeConsumer } from 'react-native-elements';
 import { connect } from 'react-redux';
 import { baseUrl } from '../shared/baseUrl';
 import { postFavourite, postComment } from '../redux/ActionCreators';
 import { Rating } from 'react-native-ratings';
 import { _ScrollView } from 'react-native';
+import * as Animatable from 'react-native-animatable';
 
 
 const mapStateToProps = state => {
@@ -123,10 +124,61 @@ class Dishdetail extends Component {
 }
 function RenderDish(props) {
 
+    let viewref;
     const dish = props.dish;
+    const handleViewRef = (ref) => viewref = ref;
+    const shareDish = (title,message,url)=>{
+        Share.share({
+            title:title,
+            message:title+': '+message+' '+url,
+            url:url
+        },{
+            dialogTitle:'Share '+ title
+        })
+    }
+    const recognizerightDrag = ({ moveX, moveY, dx, dy }) => {
+        if ( dx > 200 )
+            return true;
+        else
+            return false;
+    }
+    const recognizeleftDrag = ({ moveX, moveY, dx, dy }) => {
+        if ( dx < -200 )
+            return true;
+        else
+            return false;
+    }
+
+    const panResponder = PanResponder.create({
+        onStartShouldSetPanResponder: (e, gestureState) => {
+            return true;
+        },
+        onPanResponderGrant: () => {viewref.rubberBand(1000).then(endState => console.log(endState.finished ? 'finished' : 'cancelled'));},
+        onPanResponderEnd: (e, gestureState) => {
+            console.log("pan responder end", gestureState);
+            if (recognizeleftDrag(gestureState))
+                Alert.alert(
+                    'Add Favorite',
+                    'Are you sure you wish to add ' + dish.name + ' to favorite?',
+                    [
+                    {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+                    {text: 'OK', onPress: () => {props.favorite ? console.log('Already favorite') : props.onPress()}},
+                    ],
+                    { cancelable: false }
+                );
+            else if(recognizerightDrag(gestureState))
+                props.addComment();
+
+            return true;
+        }
+    })
 
     if (dish != null) {
-        return (
+        return(
+            <Animatable.View animation="fadeInDown" duration={2000} delay={1000}
+            ref={handleViewRef}
+            {...panResponder.panHandlers}
+            >
             <Card
                 featuredTitle={dish.name}
                 image={{ uri: baseUrl + dish.image }}>
@@ -149,8 +201,17 @@ function RenderDish(props) {
                         type='font-awesome'
                         color='#4B0082'
                         onPress={() => props.addComment()} />
+                    <Icon 
+                    raised
+                    reverse
+                    name = 'share'
+                    type = "font-awesome"
+                    color="#512DA8"
+                    onPress={()=>shareDish(dish.name,dish.description,baseUrl+dish.image)}
+                    />
                 </View>
             </Card>
+            </Animatable.View>
         );
     }
     else {
@@ -180,13 +241,15 @@ function RenderComments(props) {
     };
 
     return (
+        <Animatable.View animation="fadeInUp" duration={2000} delay={1000}> 
         <Card title='Comments' >
-            <FlatList
+         <FlatList
                 data={comments}
                 renderItem={renderCommentItem}
                 keyExtractor={item => item.id.toString()}
             />
         </Card>
+        </Animatable.View>
     );
 }
 
