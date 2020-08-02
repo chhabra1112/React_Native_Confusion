@@ -149,32 +149,6 @@ class Resevation extends Component {
                         }}
                     />
                 )}
-    
-                {/* <View style={styles.formRow}>
-                <Text style={styles.formLabel}>Date</Text>
-                    <DateTimePicker
-                        style={{flex: 2, marginRight: 20}}
-                        value={new Date()}
-                        mode="date"
-                        minimumDate={new Date("2017-01-01")}
-                        neutralButtonLabel="clear"
-                        testID="dateTimePicker"
-                    // ... You can check the source to find the other keys. 
-                        onChange={(value) => {this.setState({date: value})}}
-                    />
-                </View>
-
-                <View style={styles.formRow}>
-                    <Text style={styles.formLabel}>Time</Text>
-                    <DateTimePicker
-                        testID="dateTimePicker"
-                        value={new Date()}
-                        mode="time"
-                        is24Hour={true}
-                        display="default"
-                        onChange={(value) => {this.setState({time: value})}}
-                    />
-                </View> */}
         <View style={styles.formRow}>
             <Button
                 onPress={() => this.handleReservation()}
@@ -183,23 +157,6 @@ class Resevation extends Component {
                 accessibilityLabel="Learn more about this purple button"
             />
         </View>
-        {/* <Modal animationType = {"slide"} transparent = {false}
-                    visible = {this.state.showModal}
-                    onDismiss = {() => this.toggleModal() }
-                    onRequestClose = {() => this.toggleModal() }>
-                    <View style = {styles.modal}>
-                        <Text style = {styles.modalTitle}>Your Reservation</Text>
-                        <Text style = {styles.modalText}>Number of Guests: {this.state.guests}</Text>
-                        <Text style = {styles.modalText}>Smoking?: {this.state.smoking ? 'Yes' : 'No'}</Text>
-                        <Text style = {styles.modalText}>Date and Time: {this.state.date.toString()}</Text>
-                        
-                        <Button 
-                            onPress = {() =>{this.toggleModal(); this.resetForm();}}
-                            color="#512DA8"
-                            title="Close" 
-                            />
-                    </View>
-                </Modal> */}
             </ScrollView >
             </Animatable.View>
         )

@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import Menu from './MenuComponent';
 import Dishdetail from './DishdetailComponent';
-import { View, Platform,Image,StyleSheet, Text } from 'react-native';
+import { View, Platform,Image,StyleSheet, Text,ToastAndroid } from 'react-native';
 import { createDrawerNavigator,DrawerItems} from 'react-navigation-drawer';
 import { createStackNavigator } from 'react-navigation-stack';
-// import { NavigationContainer } from '@react-navigation/native';
 import { createAppContainer } from 'react-navigation';
 import Home from './HomeComponent';
 import About from './AboutComponent';
@@ -18,6 +17,8 @@ import { baseUrl } from '../shared/baseUrl';
 import Reservation from './ReservationComponent';
 import SafeAreaView,{SafeAreaProvider} from 'react-native-safe-area-view';
 import Login from './LoginComponent';
+import NetInfo from "@react-native-community/netinfo";
+
 
 
 const mapStateToProps = state => {
@@ -42,7 +43,7 @@ navigationOptions: ({ navigation }) => ({
       color: "#fff"            
   },
   headerTintColor: "#fff",
-  headerLeft: <Icon name="menu" size={24}
+  headerLeft: ()=><Icon name="menu" size={24}
     iconStyle={{ color: 'white' }} 
     onPress={ () => navigation.toggleDrawer() } />    
 })
@@ -111,7 +112,7 @@ const AboutNavigator = createStackNavigator({
       color: "#fff"
     },
     headerTintColor: "#fff",
-    headerLeft: <Icon name='menu' size={24}
+    headerLeft: ()=><Icon name='menu' size={24}
       color='white'
       onPress={() => navigation.toggleDrawer()}
     />
@@ -315,6 +316,33 @@ class Main extends Component {
     this.props.fetchComments();
     this.props.fetchPromos();
     this.props.fetchLeaders();
+    NetInfo.fetch()
+    .then((connectionInfo) => {
+        ToastAndroid.show('Initial Network Connectivity Type: '
+            + connectionInfo.type + ', effectiveType: ' + connectionInfo.details,
+            ToastAndroid.LONG)
+    });
+    NetInfo.addEventListener('connectionChange',state=> this.handleConnectivityChange(state.type));
+  }
+
+
+  handleConnectivityChange = (connectionInfo) => {
+    switch (connectionInfo) {
+      case 'none':
+        ToastAndroid.show('You are now offline!', ToastAndroid.LONG);
+        break;
+      case 'wifi':
+        ToastAndroid.show('You are now connected to WiFi!', ToastAndroid.LONG);
+        break;
+      case 'cellular':
+        ToastAndroid.show('You are now connected to Cellular!', ToastAndroid.LONG);
+        break;
+      case 'unknown':
+        ToastAndroid.show('You now have unknown connection!', ToastAndroid.LONG);
+        break;
+      default:
+        break;
+    }
   }
 
   render() {

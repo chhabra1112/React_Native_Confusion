@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { LEADERS } from '../shared/leaders';
-import { View,Text,FlatList } from 'react-native';
+import { View,Text,FlatList,SafeAreaView } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Card,ListItem } from 'react-native-elements';
 import { connect } from 'react-redux';
@@ -43,8 +42,7 @@ class About extends Component {
             );
         }
             if (this.props.leaders.isLoading) {
-                return(
-                    <ScrollView>
+                return(<SafeAreaView>
                         <Animatable.View animation="fadeInDown" duration={2000} delay={1000}>
                         <History />
                         <Card
@@ -52,12 +50,11 @@ class About extends Component {
                             <Loading />
                         </Card>
                         </Animatable.View>
-                    </ScrollView>
+                        </SafeAreaView>
                 );
             }
             else if (this.props.leaders.errMess) {
-                return(
-                    <ScrollView>
+                return(<SafeAreaView>
                         <Animatable.View animation="fadeInDown" duration={2000} delay={1000}>
                         <History />
                         <Card
@@ -65,14 +62,14 @@ class About extends Component {
                             <Text>{this.props.leaders.errMess}</Text>
                         </Card>
                         </Animatable.View>
-                    </ScrollView>
+                        </SafeAreaView>
                 );
             }
             else {
-                return(
-                    <ScrollView>
+                return(<ScrollView>
                         <Animatable.View animation="fadeInDown" duration={2000} delay={1000}>
                         <History />
+ 
                         <Card
                             title='Corporate Leadership'>
                         <FlatList 
@@ -81,8 +78,9 @@ class About extends Component {
                             keyExtractor={item => item.id.toString()}
                             />
                         </Card>
+                        
                         </Animatable.View>
-                    </ScrollView>
+                        </ScrollView>
                 );
             }
         }

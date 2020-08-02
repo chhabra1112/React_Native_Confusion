@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { View ,Text,Button,Icon} from 'react-native';
-import { Card } from 'react-native-elements';
+import { View ,Text,Button} from 'react-native';
+import { Card,Icon } from 'react-native-elements';
 import * as Animatable from 'react-native-animatable';
 import * as MailComposer from 'expo-mail-composer';
+
 class Contact extends Component {
     static navigationOptions = {
         title: 'Contact Us'
