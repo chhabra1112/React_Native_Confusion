@@ -6,6 +6,8 @@ import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import * as Animatable from 'react-native-animatable';
 import {Notifications} from 'expo';
 import * as Permissions from 'expo-permissions';
+import * as Calendar from 'expo-calendar';
+
 class Resevation extends Component {
     constructor(props) {
         super(props);
@@ -28,12 +30,14 @@ class Resevation extends Component {
     }
     handleReservation() {
         console.log(JSON.stringify(this.state));
+        const Date = this.state.date;
         Alert.alert(
             'Your Reservation OK ? ',
             'No. of Guests: ' + this.state.guests + '\nSmoking? '+this.state.smoking+'\nDate and Time: '+this.state.date,
             [
             {text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-            {text: 'OK', onPress: () =>  this.presentLocalNotification(this.state.date)},
+            {text: 'OK', onPress: () =>  {this.presentLocalNotification(Date)
+            this.calenderevent(Date)}},
             ],
             { cancelable: false }
         );
@@ -47,6 +51,32 @@ class Resevation extends Component {
             showModal: false
         });
     }
+
+    async obtainCalenderPermission() {
+        let permission = await Permissions.getAsync(Permissions.CALENDAR);
+        if (permission.status !== 'granted') {
+            permission = await Permissions.askAsync(Permissions.CALENDAR);
+            if (permission.status !== 'granted') {
+                Alert.alert('Permission not granted to add event in calender');
+            }
+        }
+        return permission;
+        
+}
+
+    async calenderevent(date) {
+        await this.obtainCalenderPermission()
+        const calendars = await Calendar.getCalendarsAsync();
+        const startDate= new Date(Date.parse(date))
+        const endDate = new Date(Date.parse(startDate)+(2*60*60*1000));
+        Calendar.createEventAsync(calendars[1].id,{
+            title:'Con Fusion Table Reservation',
+            startDate,
+            endDate,
+            location:'121, Clear Water Bay Road Clear Water Bay, Kowloon HONG KONG',
+        })
+    }
+
     async obtainNotificationPermission() {
         let permission = await Permissions.getAsync(Permissions.USER_FACING_NOTIFICATIONS);
         if (permission.status !== 'granted') {
@@ -100,31 +130,33 @@ class Resevation extends Component {
                         onValueChange={(value) => this.setState({ smoking: value })} />
                 </View>
                 <View style={styles.formRow}>
-                    <Text style={styles.formLabel}>Date and Time</Text>
+                    <Text style={{flex:1,fontSize:18}}>Date and Time</Text>
                     <TouchableOpacity 
                     onPress={() => this.setState({datePickerVisible: true, })}
-                    // style={styles.formItem}
+                    style={styles.formItem}
                     >
                         <Input
-                        placeholder={"01/01/2019 1:00PM"}
+                        placeholder={this.state.date.toString()}
                         editable= {false}
-                        value={this.state.date.toString()}
                         containerStyle={styles.formItem}
+                        value = {this.state.date.toString()}
                     />
                     </TouchableOpacity>
                     </View>
                 {this.state.datePickerVisible && (
                     <DateTimePicker
                         testID="dateTimePicker"
-                        value={new Date()}
+                        value={this.state.date}
                         mode="date"
                         display="default"
                         onChange={(event, value) => {
+                            if(value!==undefined){
                             this.setState({
-                                date: value,
+                                date: new Date(value),
                                 datePickerVisible: Platform.OS === 'ios' ? true : false,
                                 timePickerVisible: Platform.OS === 'ios' ? false : true
                             });
+                        }
 
                             if (event.type === "set")
                                 console.log("value:" , value);
@@ -134,18 +166,20 @@ class Resevation extends Component {
                 {this.state.timePickerVisible && (
                 <DateTimePicker
                         testID="dateTimePicker"
-                        value={this.state.date.getTime()}
+                        value={this.state.date}
                         mode="time"
                         is24Hour={true}
                         display="default"
                         onChange={(event, value) => {
+                            if(value!==undefined){
                             this.setState({
-                                date: value,
-                                timePickerVisible: Platform.OS === 'ios' ? true : false,
+                                date: new Date(value),
+                                timePickerVisible: false,
                             });
-
+                            }
                             if (event.type === "set")
                                 console.log("value:" , value);
+                                
                         }}
                     />
                 )}
